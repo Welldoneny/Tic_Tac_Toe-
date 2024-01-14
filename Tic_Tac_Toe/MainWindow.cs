@@ -18,8 +18,11 @@ namespace Tic_Tac_Toe
         Enemy enemy; //комп
         bool isPlaying = false; // идет ли игра?
         Button[,] buttons = new Button[3,3]; //игровое поле
-        bool isDarkTheme = false;
         bool isAgain = false;
+        Difficulty difficulty = Difficulty.easy ;
+        enum Difficulty { easy = 1, medium, hard};
+        enum Style { Standart = 0, Dark, Another};
+        Designer designer = Designer.getInstance();
         public MainWindow()
         {
             InitializeComponent();
@@ -35,15 +38,30 @@ namespace Tic_Tac_Toe
 
             player = new Player(Action_Label, buttons);
             enemy = new Enemy(Action_Label, buttons);
+            //устанавливаем сохраненные стили
+            switch (Properties.Settings.Default.Style)
+            {
+                case (int)Style.Standart:
+                    designer.StandartStyle(this, GamePanel, AboutPanel);
+                    break;
+                case (int)Style.Dark:
+                    designer.DarkStyle(this, GamePanel, AboutPanel);
+                    break;
+                case (int)Style.Another:
+                    designer.AnotherStyle(this, GamePanel, AboutPanel);
+                    break;
+                default:
+                    break;
+            }
+            //заполняем статистику
+            designer.Stats(EasyWinCount, MediumWinCount, HardWinCount, EasyLoseCount, MediumLoseCount, HardLoseCount);
         }
-
-
         private void Btn_Click(object sender, EventArgs e)
         {
             // получаем имя кнопки отправителя
             string btnName = sender.GetType().GetProperty("Name").GetValue(sender).ToString();
             int x = btnName[4] - '0'; //просто мем какой-то
-            int y =btnName[6] - '0'; // и майкрософт даже не хотят исправлять этот колхоз?
+            int y = btnName[6] - '0'; // и майкрософт даже не хотят исправлять этот колхоз?
             //если игра не началась то код не выполняется
             if (isPlaying)
             {
@@ -51,62 +69,74 @@ namespace Tic_Tac_Toe
                 // не работает, вероятно из за очереди встроенное в винду
                 isPlaying = false;
                 int[] arr = { x, y };
+                //ход игрока
                 //играет игрок, если выиграл то предлагаем сыграть ещё раз
                 char playerchose = player.play(arr, (Button)sender);
                 if (playerchose == player.getSide())
                 {
-                    Designer.PlayAgain(Play_Btn, PlayAgain_Btn);
-                    Designer.YouWin(Action_Label);
+                    designer.PlayAgain(Play_Btn, PlayAgain_Btn);
+                    designer.YouWin(Action_Label);
+                    switch((int)difficulty)
+                    {
+                        case 1:
+                            int newwin = Settings.Default.EasyWin;
+                            newwin++;
+                            EasyWinCount.Text = newwin.ToString();
+                            Settings.Default.EasyWin = newwin;
+                            break;
+                        case 2:
+                            newwin = Settings.Default.MediumWin;
+                            newwin++;
+                            MediumWinCount.Text = newwin.ToString();
+                            Settings.Default.MediumWin = newwin;
+                            break;
+                        case 3:
+                            newwin = Settings.Default.HardWin;
+                            newwin++;
+                            HardWinCount.Text = newwin.ToString();
+                            Settings.Default.HardWin = newwin;
+                            break;
+                        default:
+                            break;
+                    }
+                    Settings.Default.Save();
                     return;
                 }
                 //проверка на ничью
                 if (playerchose == '-')
                 {
-                    Designer.PlayAgain(Play_Btn, PlayAgain_Btn);
-                    Designer.Draw(Action_Label);
+                    designer.PlayAgain(Play_Btn, PlayAgain_Btn);
+                    designer.Draw(Action_Label);
                     return;
                 }
-                //типо комп думает
-                Designer.enemyStep(Action_Label);
-                Thread.Sleep(1000);
-                //ходит комп
-                char enemychoise = enemy.play(arr, (Button)sender);
-                if (enemychoise == enemy.getSide())
-                {
-                    Designer.PlayAgain(Play_Btn, PlayAgain_Btn);
-                    Designer.YouLose(Action_Label);
-                    return;
-                }
-                Designer.yourStep(Action_Label);
-                //проверка на ничью
-                if (enemychoise == '-')
-                {
-                    Designer.PlayAgain(Play_Btn, PlayAgain_Btn);
-                    Designer.Draw(Action_Label);
-                    return;
-                }
+                //показываем что ход компьюетар
+                designer.enemyStep(Action_Label);
+                //включаем таймер
+                timer.Start();
+                //должен быть тик
+                //по тику другой код выполняется
                 //разлочим кнопки
                 isPlaying = true;
             }
         }
-
-
         private void About_Btn_Click(object sender, EventArgs e)
         {
             //открывает окно с описанием игры
-            Game_Controle.SelectTab(1);
+            GamePanel.Visible = false;
+            AboutPanel.Visible = true;
             //отключаем кнопки выбора стороны
-            Designer.chooseButtonsOff(Cross_Choose_Btn, Zero_Choose_Btn);
+            designer.chooseButtonsOff(Cross_Choose_Btn, Zero_Choose_Btn);
         }
 
         private void Back_Btn_Click(object sender, EventArgs e)
         {
             //возвращает в окно с игрой
-            Game_Controle.SelectTab(0);
+            GamePanel.Visible = true;
+            AboutPanel.Visible = false;
             //включает кнопки выбора стороны, если игра ещё не была начата
             if (!isPlaying)
             {
-                Designer.chooseButtonsOn(Cross_Choose_Btn, Zero_Choose_Btn);
+                designer.chooseButtonsOn(Cross_Choose_Btn, Zero_Choose_Btn);
             }
         }
 
@@ -115,7 +145,7 @@ namespace Tic_Tac_Toe
             //устанавливает сторону игрока как крестик
             if (!isAgain) //проверка на то, что выбор первый раз, не во время повторной игры
             {
-                Designer.StartToPlay(Action_Label);
+                designer.StartToPlay(Action_Label);
                 player.setSide((char)Template.CoordEnum.Cross);
                 enemy.setSide((char)Template.CoordEnum.Zero);
             }
@@ -126,8 +156,11 @@ namespace Tic_Tac_Toe
             //устанавливает сторону игрока как нолик
             if (!isAgain)
             {
-                Designer.StartToPlay(Action_Label);
+                //просим дизайнера показать что мы выбрали сторону и готовы к игре
+                designer.StartToPlay(Action_Label);
+                //устанавливаем выбранную сторону в класс игрока
                 player.setSide((char)Template.CoordEnum.Zero);
+                //устанавливаем противопложную сторону в класс противника
                 enemy.setSide((char)Template.CoordEnum.Cross);
             }
         }
@@ -141,13 +174,17 @@ namespace Tic_Tac_Toe
                 return;
             }
             // высвечивает "ваш ход"
-            Designer.yourStep(Action_Label);
+            designer.yourStep(Action_Label);
+            //меняем текст кнопки
+            designer.GameOn((Button)sender);
             // игра началась
             isPlaying = true;
             // переключает на окно с игровым полем
-            Game_Controle.SelectTab(0);
+            GamePanel.Visible = true;
+            AboutPanel.Visible = false;
+            StatPanel.Visible = false;
             // отключает кнопки выбора стороны
-            Designer.chooseButtonsOff(Cross_Choose_Btn, Zero_Choose_Btn);
+            designer.chooseButtonsOff(Cross_Choose_Btn, Zero_Choose_Btn);
         }
 
         private void PlayAgain_Btn_Click(object sender, EventArgs e)
@@ -158,16 +195,100 @@ namespace Tic_Tac_Toe
             //очищаем кнопочки
             Designer.clear(buttons);
             //можно выбрать сторону
-            Designer.chooseButtonsOn(Cross_Choose_Btn, Zero_Choose_Btn);
+            designer.chooseButtonsOn(Cross_Choose_Btn, Zero_Choose_Btn);
             //поле действий подсказывает, что нужно выбрать сторону
-            Designer.ChooseSide(Action_Label);
+            designer.ChooseSide(Action_Label);
             //кнопки играть снова появилась
-            Designer.Play(Play_Btn, PlayAgain_Btn);
+            designer.Play(Play_Btn, PlayAgain_Btn);
+            //возвращаем текст кнопке играть
+            designer.ToPlay(Play_Btn);
             //очищаем выбор стороны
             isAgain = true;
-            Designer.RadioButtonsClear(Cross_Choose_Btn, Zero_Choose_Btn);
+            designer.RadioButtonsClear(Cross_Choose_Btn, Zero_Choose_Btn);
             isAgain = false;
         }
 
+        //легкий режим
+        private void EasyDifficult_Btn_CheckedChanged(object sender, EventArgs e)
+        {
+            difficulty = Difficulty.easy;
+        }
+
+        //средний режим
+        private void MediumDifficult_Btn_CheckedChanged(object sender, EventArgs e)
+        {
+            difficulty = Difficulty.medium;
+        }
+
+        //сложный режим
+        private void HardDifficultBtn_CheckedChanged(object sender, EventArgs e)
+        {
+            difficulty = Difficulty.hard;
+        }
+
+        //открывает окно редактирования стиля
+        private void StyleBtn_Click(object sender, EventArgs e)
+        {
+            StyleWindow styleWindow = new StyleWindow(this, GamePanel, AboutPanel);
+            styleWindow.Show();
+        }
+
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            timer.Stop();
+            //ходит комп
+            char enemychoise = enemy.play((int)difficulty); 
+            if (enemychoise == enemy.getSide())                  //если комп собрал 3 в ряд
+            {
+                designer.PlayAgain(Play_Btn, PlayAgain_Btn);     //предлагаем сыграть ещё раз
+                designer.YouLose(Action_Label);                  //сообщаем о проигрыше
+                switch ((int)difficulty)
+                {
+                    case 1:
+                        int newwin = Settings.Default.EasyLose;
+                        newwin++;
+                        EasyLoseCount.Text = newwin.ToString();
+                        Settings.Default.EasyLose = newwin;
+                        break;
+                    case 2:
+                        newwin = Settings.Default.MediumLose;
+                        newwin++;
+                        MediumLoseCount.Text = newwin.ToString();
+                        Settings.Default.MediumLose = newwin;
+                        break;
+                    case 3:
+                        newwin = Settings.Default.HardLose;
+                        newwin++;
+                        HardLoseCount.Text = newwin.ToString();
+                        Settings.Default.HardLose = newwin;
+                        break;
+                    default:
+                        break;
+                }
+                return;
+            }
+            designer.yourStep(Action_Label);                     //высвечиваем твой ход
+            //проверка на ничью
+            if (enemychoise == '-')              
+            {
+                designer.PlayAgain(Play_Btn, PlayAgain_Btn);    //предлагаем сыграть ещё раз
+                designer.Draw(Action_Label);                    //сообщаем о ничье
+                return;
+            }
+        }
+
+        private void BackStat_Btn_Click(object sender, EventArgs e)
+        {
+            GamePanel.Visible = true;
+            StatPanel.Visible = false;
+            AboutPanel.Visible = false;
+        }
+
+        private void Stat_Btn_Click(object sender, EventArgs e)
+        {
+            GamePanel.Visible = false;
+            StatPanel.Visible = true;
+            AboutPanel.Visible = false;
+        }
     }
 }

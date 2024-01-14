@@ -22,7 +22,7 @@ namespace Tic_Tac_Toe
         // игровое поле
         protected static char[,] game = new char[3, 3];
         //сторона
-        protected char side = '-';
+        protected char side = (char)CoordEnum.Defolt;
         //массив содержащий кнопки отвечающие за игровое поле
         protected Button[,] buttons = new Button[3, 3];
         //конструктор
@@ -36,7 +36,7 @@ namespace Tic_Tac_Toe
                     game[i, j] = (char)CoordEnum.Defolt;
                 }
             }
-            
+            //получаем доступ к элементам управления            
             label = lb;
             buttons = btns;
         }
@@ -44,18 +44,25 @@ namespace Tic_Tac_Toe
         /// устанавливает сторону
         /// </summary>
         /// <param name="side"></param>
-        public void setSide(char side) { this.side = side; }
+        public void setSide(char side)
+        { 
+            this.side = side;
+        }
         /// <summary>
         /// возвращает сторону
         /// </summary>
         /// <returns></returns>
-        public char getSide() { return side; }
+        public char getSide()
+        { 
+            return side;
+        }
         /// <summary>
         /// ход по определенным координатам
         /// </summary>
         /// <param name="coord"></param>
         /// <param name="btn"></param>
-        abstract public void choseCoord(int[] coord, Button btn);
+        virtual public void choseCoord(int[] coord, Button btn) { }
+        virtual public void choseCoord(int difficulty) { }
         /// <summary>
         /// проверка на выигрышь
         /// </summary>
@@ -95,7 +102,7 @@ namespace Tic_Tac_Toe
             {
                 for (int j = 0; j < game.GetLength(1); j++)
                 {
-                    if (game[i,j] == '-')
+                    if (game[i,j] == (char)CoordEnum.Defolt)
                     {
                         k++;
                     }
@@ -104,7 +111,7 @@ namespace Tic_Tac_Toe
             if (k == 0)
             {
                 MessageBox.Show("Ничья!");
-                return '-';
+                return (char)CoordEnum.Defolt;
             }
             return ' ';
         }
@@ -114,6 +121,11 @@ namespace Tic_Tac_Toe
         public char play(int[] coord, Button btn)
         {
             choseCoord(coord, btn);
+            return check();
+        }
+        public char play(int difficulty)
+        {
+            choseCoord(difficulty);
             return check();
         }
         /// <summary>

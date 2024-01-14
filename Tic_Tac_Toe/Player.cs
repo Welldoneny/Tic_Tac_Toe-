@@ -11,6 +11,7 @@ namespace Tic_Tac_Toe
 {
     internal class Player : Template
     {
+        Designer designer = Designer.getInstance();
         public Player(System.Windows.Forms.Label lb, Button[,] btns) : base(lb, btns)
         {
             //передаем в шаблонный родительский класс поле действий и массив кнопок игрового поля
@@ -26,14 +27,14 @@ namespace Tic_Tac_Toe
             //устанавливаем изображение
             if (getSide() == (char)CoordEnum.Cross)
             {
-                Designer.setButtonImg(btn, cross_img);
+                designer.setButtonImg(btn, cross_img);
             }
             if (getSide() == (char)CoordEnum.Zero)
             {
-                Designer.setButtonImg(btn, zero_img);
+                designer.setButtonImg(btn, zero_img);
             }
             //отключаем кнопку
-            Designer.setButtonEnabled(btn);
+            designer.setButtonEnabled(btn);
         }
     }
 }

@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="Game_Page.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="Btn_2_2.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -211,15 +208,15 @@
         Qg2EGgg1EGog1ECogVADoQZCDYQaCDUQaiDUQKiBUAOhBkINgO0BBYbIgiOOYm0AAAAASUVORK5CYII=
 </value>
   </data>
-  <metadata name="About_Page.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
   <data name="About_Label.Text" xml:space="preserve">
     <value>Игроки по очереди ставят на свободные клетки поля 3×3 знаки (один всегда крестики, другой всегда нолики). Первый, выстроивший в ряд 3 своих фигуры по вертикали, горизонтали или большой диагонали, выигрывает.
-
-
-</value>
+Легкий уровень сложности - компьютер наугад выбирает поле в которое будет ходить.
+Средний уровень сложности - здесь, компьютер вначале подумает, куда ему выгоднее сходить, чтобы выиграть
+Сложный уровень сложности - тут компьютер тоже делает выбор перед ходом, но по другой тактике, он ищет ход, который не дает вам выиграть</value>
   </data>
+  <metadata name="timer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAEAANwAAAEAIACoiwMAFgAAACgAAAAAAQAAuAEAAAEAIAAAAAAAAHADAAAAAAAAAAAAAAAAAAAA
